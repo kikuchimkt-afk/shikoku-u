@@ -1,3 +1,7 @@
+// Helper functions for Passage data
+const b = (t) => `<span class="blank-badge">${t}</span>`;
+const u = (t, n) => `<span class="u-meaning-orange">${t}</span>` + (n ? `<span class="marker-circle">${n}</span>` : "");
+
 const pastDataP1 = [
             { id: "p1_01", type: "choice", q: "We are going to leave for Australia (               ) two weeks.", a: ["of", "in", "by", "with"], correct: 1, exp: "in + 期間で「〜後」。leave for は「〜に向けて出発する」。", cat: "過去問 大問1" },
             { id: "p1_02", type: "choice", q: "(               ) almost ten years since I met you in Kyoto.", a: ["It is", "It has passed", "It has", "It was"], correct: 0, exp: "It is [has been] ~ since ... で「〜してから...になる」。", cat: "過去問 大問1" },
