@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四国大学 英語完全対策アプリ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 背景画像コンテナ */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            filter: blur(8px) brightness(0.85);
+            transform: scale(1.1);
+        }
+
+        /* グラデーションオーバーレイ */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.6) 50%, rgba(240, 147, 251, 0.5) 100%);
+        }
+
+        /* グラスモーフィズム */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-dark {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 共通カラー・判定用 */
+        .correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            color: #166534 !important;
+        }
+
+        .wrong {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
+        }
+
+        /* アニメーション */
+        .explanation-card {
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .float-anim {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* メニューカード */
+        .menu-card {
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 長文読解用スタイル */
+        .reading-text-area {
+            max-height: 45vh;
+            overflow-y: auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+            line-height: 2.2;
+            font-size: 1.15rem;
+            font-family: 'Noto Serif JP', serif;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 空所マーカー（バッジ） */
+        .blank-marker {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border-radius: 6px;
+            padding: 0 10px;
+            margin: 0 4px;
+            font-weight: bold;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 0.9em;
+        }
+
+        /* 下線部マーカー */
+        .underline-marker {
+            border-bottom: 4px solid #f59e0b;
+            padding-bottom: 2px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .ref-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f59e0b;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 4px;
+        }
+
+        .annotation-box {
+            font-size: 0.85rem;
+            color: #475569;
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+            border-left: 4px solid #cbd5e1;
+        }
+
+        .dialogue-text {
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+
+        /* 整序英作文チップ */
+        .word-chip {
+            transition: all 0.2s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .word-chip:active {
+            transform: scale(0.95);
+        }
+
+        .word-chip.selected {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-12">
+    <!-- 背景画像（ランダム・ソフトフォーカス） -->
+    <div id="bg-image" class="bg-container"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- Header -->
+    <header class="glass-dark text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="quizApp.goHome()" class="hover:bg-white/20 p-2 rounded-lg transition-all"
+                    title="ホームへ戻る">
+                    <i class="fa-solid fa-house text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wider leading-none">四国大学 英語対策</h1>
+                    <p class="text-[10px] opacity-70 mt-1 uppercase">Complete Prep App</p>
+                </div>
+            </div>
+            <div id="score-area" class="text-right hidden">
+                <span id="score-display"
+                    class="bg-white/30 backdrop-blur px-4 py-1 rounded-full text-xs font-bold shadow-sm">Score: 0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 mt-6">
+        <!-- Start Screen -->
+        <div id="start-screen" class="space-y-8">
+
+            <!-- Hero Section -->
+            <section class="glass-dark rounded-3xl p-10 md:p-16 text-center text-white">
+                <div class="text-6xl mb-6 float-anim">📚</div>
+                <h1 class="text-4xl md:text-5xl font-black mb-4">四国大学<br>英語入試 完全対策</h1>
+                <p class="text-white/80 text-lg mb-8">過去問＋200問の模擬試験で合格力をアップ</p>
+                <div class="flex flex-wrap gap-4 justify-center">
+                    <a href="#analysis-section"
+                        class="inline-block bg-white/20 backdrop-blur text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:bg-white/30 transition-all border border-white/30">
+                        <i class="fa-solid fa-chart-line mr-2"></i>入試分析を見る
+                    </a>
+                    <a href="#practice-section"
+                        class="inline-block bg-white text-purple-700 px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:scale-105 transition-all">
+                        <i class="fa-solid fa-play mr-2"></i>学習を始める
+                    </a>
+                </div>
+            </section>
+
+            <!-- 入試分析レポート -->
+            <section id="analysis-section" class="glass-card rounded-3xl p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800">四国大学 英語入試 分析レポート</h2>
+                </div>
+
+                <!-- 試験概要 -->
+                <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-5 mb-6">
+                    <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2"><i
+                            class="fa-solid fa-info-circle text-blue-500"></i> 試験概要</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                            <div class="text-2xl font-black text-purple-600">60分</div>
+                            <div class="text-xs text-slate-500">試験時間</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                            <div class="text-2xl font-black text-purple-600">100点</div>
+                            <div class="text-xs text-slate-500">満点</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                            <div class="text-2xl font-black text-purple-600">4大問</div>
+                            <div class="text-xs text-slate-500">構成</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                            <div class="text-2xl font-black text-purple-600">約56問</div>
+                            <div class="text-xs text-slate-500">総問題数</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 大問別分析 -->
+                <div class="space-y-4 mb-6">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2"><i
+                            class="fa-solid fa-list-ol text-amber-500"></i> 大問別 出題分析</h3>
+
+                    <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-blue-800">大問1：空所補充（文法・語彙）</h4>
+                            <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-bold">30問・30点</span>
+                        </div>
+                        <p class="text-sm text-blue-700 mb-2">短文の空所に適切な語句を選ぶ問題。基礎的な文法・語法・熟語が中心。</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">前置詞</span>
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">時制</span>
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">熟語表現</span>
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">比較級</span>
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">仮定法</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-50 border-l-4 border-purple-500 rounded-r-xl p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-purple-800">大問2：整序英作文</h4>
+                            <span
+                                class="bg-purple-500 text-white text-xs px-2 py-1 rounded-full font-bold">15問・30点</span>
+                        </div>
+                        <p class="text-sm text-purple-700 mb-2">日本語の意味に合うように語句を並べ替える問題。構文力が問われる。</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">不定詞構文</span>
+                            <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">関係詞</span>
+                            <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">比較構文</span>
+                            <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">使役・知覚動詞</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 rounded-r-xl p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-emerald-800">大問3：会話文</h4>
+                            <span
+                                class="bg-emerald-500 text-white text-xs px-2 py-1 rounded-full font-bold">8問・16点</span>
+                        </div>
+                        <p class="text-sm text-emerald-700 mb-2">日常会話の空所に適切な応答を選ぶ問題。会話表現の知識が必要。</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full">勧誘・依頼</span>
+                            <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full">提案への応答</span>
+                            <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full">相づち表現</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-amber-800">大問4：長文読解</h4>
+                            <span
+                                class="bg-amber-500 text-white text-xs px-2 py-1 rounded-full font-bold">約7問・24点</span>
+                        </div>
+                        <p class="text-sm text-amber-700 mb-2">300〜400語程度の英文を読み、内容理解・T/F問題に答える。</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full">内容一致</span>
+                            <span class="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full">True/False</span>
+                            <span class="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full">下線部の意味</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 時間配分アドバイス -->
+                <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-5 mb-6">
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><i
+                            class="fa-solid fa-clock text-rose-500"></i> 推奨時間配分（60分）</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-16 text-center bg-blue-500 text-white text-xs font-bold py-1 rounded-full">15分
+                            </div>
+                            <div class="flex-1 h-3 bg-blue-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500" style="width: 25%"></div>
+                            </div>
+                            <span class="text-sm text-slate-600 w-24">大問1（30問）</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-16 text-center bg-purple-500 text-white text-xs font-bold py-1 rounded-full">
+                                15分</div>
+                            <div class="flex-1 h-3 bg-purple-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-purple-500" style="width: 25%"></div>
+                            </div>
+                            <span class="text-sm text-slate-600 w-24">大問2（15問）</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-16 text-center bg-emerald-500 text-white text-xs font-bold py-1 rounded-full">
+                                10分</div>
+                            <div class="flex-1 h-3 bg-emerald-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-emerald-500" style="width: 16.7%"></div>
+                            </div>
+                            <span class="text-sm text-slate-600 w-24">大問3（8問）</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-16 text-center bg-amber-500 text-white text-xs font-bold py-1 rounded-full">
+                                20分</div>
+                            <div class="flex-1 h-3 bg-amber-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-amber-500" style="width: 33.3%"></div>
+                            </div>
+                            <span class="text-sm text-slate-600 w-24">大問4（長文）</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 合格のポイント -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5">
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><i
+                            class="fa-solid fa-lightbulb text-green-500"></i> 合格のためのポイント</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="flex gap-3">
+                            <div
+                                class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                                1</div>
+                            <div>
+                                <h4 class="font-bold text-green-800 text-sm">基礎文法の徹底</h4>
+                                <p class="text-xs text-green-700">大問1・2は基礎的な文法知識で8割取れます。高校1年レベルの復習を！</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <div
+                                class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                                2</div>
+                            <div>
+                                <h4 class="font-bold text-green-800 text-sm">熟語・イディオムの暗記</h4>
+                                <p class="text-xs text-green-700">頻出熟語100個を覚えるだけで得点力が大幅アップします。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <div
+                                class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                                3</div>
+                            <div>
+                                <h4 class="font-bold text-green-800 text-sm">会話表現を押さえる</h4>
+                                <p class="text-xs text-green-700">日常会話のパターンを覚えれば大問3は確実に取れます。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <div
+                                class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                                4</div>
+                            <div>
+                                <h4 class="font-bold text-green-800 text-sm">長文は全文読まない</h4>
+                                <p class="text-xs text-green-700">設問を先に読み、該当箇所だけを精読する時短テクニックを！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- このアプリの特徴 -->
+                <div class="mt-6 p-5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl text-white">
+                    <h3 class="font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-star"></i> このアプリで対策できること
+                    </h3>
+                    <div class="grid md:grid-cols-3 gap-4 text-center">
+                        <div class="bg-white/20 backdrop-blur rounded-xl p-4">
+                            <div class="text-3xl font-black">53問</div>
+                            <div class="text-sm opacity-80">過去問すべて収録</div>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur rounded-xl p-4">
+                            <div class="text-3xl font-black">200問</div>
+                            <div class="text-sm opacity-80">オリジナル模擬問題</div>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur rounded-xl p-4">
+                            <div class="text-3xl font-black">全問</div>
+                            <div class="text-sm opacity-80">詳細解説付き</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 苦手問題復習 -->
+            <section id="weak-section" class="hidden">
+                <div class="glass-card rounded-3xl p-6 border-l-4 border-red-500">
+                    <button onclick="quizApp.init('weak_review')"
+                        class="w-full text-left flex justify-between items-center group">
+                        <div class="flex items-center gap-6">
+                            <div
+                                class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center text-red-500 text-2xl">
+                                <i class="fa-solid fa-fire-flame-curved"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-red-600 text-lg">苦手問題を復習する</h3>
+                                <p class="text-sm text-slate-500">間違えた問題を解き直しましょう</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span id="weak-count"
+                                class="bg-red-500 text-white px-4 py-2 rounded-full text-lg font-black">0</span>
+                            <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-red-500 text-xl"></i>
+                        </div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 過去問セクション -->
+            <section id="practice-section" class="glass-card rounded-3xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800">過去問演習</h2>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="menu-card glass-card p-5 rounded-2xl text-center">
+                        <div class="text-purple-600 text-2xl mb-3"><i class="fa-solid fa-list-check"></i></div>
+                        <h3 class="font-bold text-sm text-slate-800">大問1：空所補充</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-3">文法・語彙（30問）</p>
+                        <button onclick="quizApp.init('past_p1')"
+                            class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-xl text-xs font-bold hover:opacity-90">全問演習</button>
+                    </div>
+                    <div class="menu-card glass-card p-5 rounded-2xl text-center">
+                        <div class="text-purple-600 text-2xl mb-3"><i class="fa-solid fa-sort-alpha-down"></i></div>
+                        <h3 class="font-bold text-sm text-slate-800">大問2：整序英作文</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-3">並べ替え（15問）</p>
+                        <button onclick="quizApp.init('past_p2')"
+                            class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-xl text-xs font-bold hover:opacity-90">全問演習</button>
+                    </div>
+                    <div class="menu-card glass-card p-5 rounded-2xl text-center">
+                        <div class="text-purple-600 text-2xl mb-3"><i class="fa-solid fa-comments"></i></div>
+                        <h3 class="font-bold text-sm text-slate-800">大問3：会話文</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-3">空所補充（8問）</p>
+                        <button onclick="quizApp.init('past_p3')"
+                            class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-xl text-xs font-bold hover:opacity-90">全問演習</button>
+                    </div>
+                    <div class="menu-card glass-card p-5 rounded-2xl text-center">
+                        <div class="text-purple-600 text-2xl mb-3"><i class="fa-solid fa-book-open"></i></div>
+                        <h3 class="font-bold text-sm text-slate-800">大問4：長文読解</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-3">読解（3題）</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="quizApp.init('past_p4_random')"
+                                class="bg-slate-100 text-slate-700 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-200">1題</button>
+                            <button onclick="quizApp.init('past_p4_all')"
+                                class="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-xl text-[10px] font-bold">全題</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 模擬試験セクション -->
+            <section class="glass-card rounded-3xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800">模擬試験 <span
+                            class="text-sm font-normal text-slate-400">200問収録</span></h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="menu-card glass-card p-5 rounded-2xl text-center">
+                        <div class="text-emerald-600 text-3xl mb-3"><i class="fa-solid fa-bolt"></i></div>
+                        <h3 class="font-bold text-lg text-slate-800">大問1形式</h3>
+                        <p class="text-xs text-slate-500 mb-4">100問収録</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="quizApp.init('mock_p1_random')"
+                                class="bg-emerald-100 text-emerald-700 py-2 rounded-xl text-xs font-bold hover:bg-emerald-200">10問</button>
+                            <button onclick="quizApp.init('mock_p1_all')"
+                                class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 rounded-xl text-xs font-bold">全100問</button>
+                        </div>
+                    </div>
+                    <div class="menu-card glass-card p-5 rounded-2xl text-center">
+                        <div class="text-emerald-600 text-3xl mb-3"><i class="fa-solid fa-puzzle-piece"></i></div>
+                        <h3 class="font-bold text-lg text-slate-800">大問2形式</h3>
+                        <p class="text-xs text-slate-500 mb-4">50問収録</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="quizApp.init('mock_p2_random')"
+                                class="bg-emerald-100 text-emerald-700 py-2 rounded-xl text-xs font-bold hover:bg-emerald-200">10問</button>
+                            <button onclick="quizApp.init('mock_p2_all')"
+                                class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 rounded-xl text-xs font-bold">全50問</button>
+                        </div>
+                    </div>
+                    <div class="menu-card glass-card p-5 rounded-2xl text-center">
+                        <div class="text-emerald-600 text-3xl mb-3"><i class="fa-solid fa-headset"></i></div>
+                        <h3 class="font-bold text-lg text-slate-800">大問3形式</h3>
+                        <p class="text-xs text-slate-500 mb-4">50問収録</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="quizApp.init('mock_p3_random')"
+                                class="bg-emerald-100 text-emerald-700 py-2 rounded-xl text-xs font-bold hover:bg-emerald-200">10問</button>
+                            <button onclick="quizApp.init('mock_p3_all')"
+                                class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 rounded-xl text-xs font-bold">全50問</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="mb-6">
+                <div class="flex justify-between items-end mb-3">
+                    <span id="question-number" class="text-sm font-bold text-white/80">Question</span>
+                    <span id="mode-badge"
+                        class="text-xs font-bold bg-white/20 text-white px-3 py-1 rounded-full uppercase backdrop-blur">カテゴリー</span>
+                </div>
+                <div class="w-full bg-white/20 h-2.5 rounded-full overflow-hidden">
+                    <div id="progress-fill" class="h-full bg-white transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- 長文エリア（大問4用） -->
+            <div id="reading-passage" class="reading-text-area hidden shadow-sm"></div>
+
+            <div id="question-card" class="glass-card rounded-3xl shadow-lg p-6 md:p-10 mb-6">
+                <div id="jp-text"
+                    class="text-sm font-bold text-purple-600 mb-6 hidden border-l-4 border-purple-500 pl-3"></div>
+                <div id="question-text"
+                    class="text-lg md:text-xl font-medium text-slate-800 mb-10 leading-relaxed dialogue-text"></div>
+
+                <div id="answer-area">
+                    <div id="options-container" class="grid grid-cols-1 gap-3"></div>
+                    <div id="scramble-container" class="hidden">
+                        <div id="built-sentence"
+                            class="min-h-[70px] p-5 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl mb-6 flex flex-wrap gap-2 items-center">
+                            <span class="text-slate-400 text-sm italic">単語をタップしてください...</span>
+                        </div>
+                        <div id="word-pool" class="flex flex-wrap gap-2 justify-center"></div>
+                        <div class="mt-8 flex justify-between">
+                            <button onclick="quizApp.resetScramble()"
+                                class="text-slate-500 font-bold px-4 py-2 hover:bg-slate-100 rounded-xl transition-all"><i
+                                    class="fa-solid fa-undo mr-1"></i> リセット</button>
+                            <button onclick="quizApp.checkScramble()"
+                                class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-10 py-3 rounded-2xl font-bold shadow-md hover:opacity-90 transition-all">回答する</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="explanation-area"
+                class="explanation-card glass-card border-l-8 border-amber-400 rounded-r-3xl p-6 mb-8">
+                <h4 class="font-bold text-amber-900 text-lg mb-2 flex items-center gap-2"><i
+                        class="fa-solid fa-lightbulb"></i> 解説</h4>
+                <p id="explanation-text" class="text-amber-800 leading-relaxed"></p>
+            </div>
+
+            <div class="flex justify-center">
+                <button id="next-btn" onclick="quizApp.nextQuestion()"
+                    class="hidden bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 px-16 rounded-2xl shadow-xl transition-all hover:opacity-90">次へ
+                    <i class="fa-solid fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden glass-card rounded-3xl shadow-xl p-10 md:p-16 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold mb-6 text-slate-800">演習終了！</h2>
+            <div id="result-score-box"
+                class="text-7xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent mb-10">
+                0 / 0</div>
+            <p id="result-message" class="text-slate-600 mb-12 font-bold text-lg"></p>
+            <button onclick="quizApp.goHome()"
+                class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-16 py-5 rounded-3xl font-bold shadow-lg transition-transform hover:scale-105">ホームに戻る</button>
+        </div>
+    </main>
+
+    <script>
+        // --- ヘルパー: タグ付け ---
+        function b(num) { return `<span class="blank-marker">${num}</span>`; }
+        function u(text, num) { return `<span class="underline-marker">${text}</span><span class="ref-num">${num}</span>`; }
+
+        // --- 過去問データ (全データ統合) ---
+        const pastDataP1 = [
+            { id: "p1_01", type: "choice", q: "We are going to leave for Australia (               ) two weeks.", a: ["of", "in", "by", "with"], correct: 1, exp: "in + 期間で「〜後」。leave for は「〜に向けて出発する」。", cat: "過去問 大問1" },
+            { id: "p1_02", type: "choice", q: "(               ) almost ten years since I met you in Kyoto.", a: ["It is", "It has passed", "It has", "It was"], correct: 0, exp: "It is [has been] ~ since ... で「〜してから...になる」。", cat: "過去問 大問1" },
+            { id: "p1_03", type: "choice", q: "This medicine will do you (               ).", a: ["happy", "comfortable", "effective", "good"], correct: 3, exp: "do A good で「Aに効く、Aのためになる」。", cat: "過去問 大問1" },
+            { id: "p1_04", type: "choice", q: "While (               ) in London, I visited the National Gallery.", a: ["stay", "stayed", "staying", "to stay"], correct: 2, exp: "While staying... の形。主語とbe動詞が省略された分詞構文です。", cat: "過去問 大問1" },
+            { id: "p1_05", type: "choice", q: "Robert is a good scholar, and, (               ), a good teacher.", a: ["not only", "still less", "what is more", "that is"], correct: 2, exp: "what is more「その上、さらに」。", cat: "過去問 大問1" },
+            { id: "p1_06", type: "choice", q: "You can listen to music (               ) you like.", a: ["as many as", "as far as", "as long as", "as high as"], correct: 2, exp: "as long as「〜する限り（条件）」。", cat: "過去問 大問1" },
+            { id: "p1_07", type: "choice", q: "I love him none the (               ) for his faults.", a: ["little", "less", "much", "more"], correct: 1, exp: "none the less for ...「...にもかかわらず、やはり」。", cat: "過去問 大問1" },
+            { id: "p1_08", type: "choice", q: "(               ) your help, I could not have done it.", a: ["But for", "Instead of", "Thanks to", "For all"], correct: 0, exp: "But for ...「...がなかったならば」。仮定法過去完了の帰結。 ", cat: "過去問 大問1" },
+            { id: "p1_09", type: "choice", q: "A: How often do you play tennis? B: Every (               ) day.", a: ["one", "other", "another", "each"], correct: 1, exp: "every other day「1日おきに」。", cat: "過去問 大問1" },
+            { id: "p1_10", type: "choice", q: "A: Have you reserved a table at the restaurant? B: Not yet. I made a call, but I couldn't (               ) through.", a: ["take", "go", "come", "get"], correct: 3, exp: "get through「（電話などが）つながる」。", cat: "過去問 大問1" },
+            { id: "p1_11", type: "choice", q: "The bullet train is (               ) Tokyo Station.", a: ["approaching", "approaching on", "approached", "being approached"], correct: 0, exp: "approachは他動詞なので前置詞は不要です。", cat: "過去問 大問1" },
+            { id: "p1_12", type: "choice", q: "Please forgive me for (               ) your e-mail.", a: ["not answer", "not to answer", "answering not", "not answering"], correct: 3, exp: "動名詞の否定は not を直前に置きます。", cat: "過去問 大問1" },
+            { id: "p1_13", type: "choice", q: "She put up some posters around the church so as (               ) when she will play the guitar.", a: ["to be", "to do", "to help", "to advertise"], correct: 3, exp: "so as to do「〜するために」。宣伝するので advertise が適切。", cat: "過去問 大問1" },
+            { id: "p1_14", type: "choice", q: "My mother patted me on (               ).", a: ["a shoulder", "shoulders", "the shoulder", "shoulder"], correct: 2, exp: "patted me on the shoulder (身体部位をたたく)。", cat: "過去問 大問1" },
+            { id: "p1_15", type: "choice", q: "(               ) of my classmates have been to China.", a: ["No", "None", "No one", "Not"], correct: 1, exp: "None of A「Aのうちの誰も〜ない」。", cat: "過去問 大問1" },
+            { id: "p1_16", type: "choice", q: "Her experiment resulted in (               ) outcome.", a: ["surprised", "a surprised", "surprising", "a surprising"], correct: 3, exp: "outcome（結果）は可算名詞なので a が必要。驚きを与えるのは surprising。", cat: "過去問 大問1" },
+            { id: "p1_17", type: "choice", q: "He is still (               ) in bed.", a: ["upstairs", "on upstairs", "in upstairs", "of upstairs"], correct: 0, exp: "upstairs（2階で）は副詞なので前置詞は不要です。", cat: "過去問 大問1" },
+            { id: "p1_18", type: "choice", q: "We can see a lot of stars (               ) night in the countryside.", a: ["in", "on", "at", "to"], correct: 2, exp: "at night（夜に）は時刻の時点を表します。", cat: "過去問 大問1" },
+            { id: "p1_19", type: "choice", q: "(               ) there is a miracle, I won't be able to get a perfect score.", a: ["Although", "If", "Without", "Unless"], correct: 3, exp: "Unless「〜しない限り」。意味的に条件として適切。", cat: "過去問 大問1" },
+            { id: "p1_20", type: "choice", q: "If you are in a club, you have to go. But, if not, you (               ) go.", a: ["must", "dare not", "don't have to", "had to"], correct: 2, exp: "don't have to「〜する必要はない」。", cat: "過去問 大問1" },
+            { id: "p1_21", type: "choice", q: "How many houses (               ) damaged in the tornado?", a: ["were", "had", "did", "made"], correct: 0, exp: "家が被害を受けたという受動態 were damaged。", cat: "過去問 大問1" },
+            { id: "p1_22", type: "choice", q: "It will take at least two weeks to get this job (               ).", a: ["doing", "does", "being done", "done"], correct: 3, exp: "get + O + done で「Oを〜してもらう/終わらせる」。", cat: "過去問 大問1" },
+            { id: "p1_23", type: "choice", q: "If it (               ) to rain this hard, tonight's game will be canceled.", a: ["keeps", "stays", "continues", "lasts"], correct: 2, exp: "continue to do で「〜し続ける」。", cat: "過去問 大問1" },
+            { id: "p1_24", type: "choice", q: "The man checked if there were any seats (               ) on the flight.", a: ["available", "frequent", "ridiculous", "successful"], correct: 0, exp: "available「空いている、利用可能な」。", cat: "過去問 大問1" },
+            { id: "p1_25", type: "choice", q: "By the time she finished her work, she (               ) a break three times.", a: ["took", "has taken", "had taken", "will have taken"], correct: 2, exp: "過去のある時点（finished）までの経験なので過去完了形。", cat: "過去問 大問1" },
+            { id: "p1_26", type: "choice", q: "Yuka lost her temper (               ) after David spilled coffee.", a: ["presently", "currently", "nearly", "immediately"], correct: 3, exp: "immediately after で「〜の直後に」。", cat: "過去問 大問1" },
+            { id: "p1_27", type: "choice", q: "I'm reluctant (               ) it because it wrinkles so easily.", a: ["in wearing", "of wearing", "to wear", "that wears"], correct: 2, exp: "be reluctant to do「〜するのを嫌がる」。", cat: "過去問 大問1" },
+            { id: "p1_28", type: "choice", q: "He used to carry his favorite bag with him (               ) he went.", a: ["somewhere", "wherever", "which", "at which"], correct: 1, exp: "wherever「〜するところならどこへでも」。", cat: "過去問 大問1" },
+            { id: "p1_29", type: "choice", q: "A (               ) is a punishment in which a person is ordered to pay money.", a: ["law", "cross", "credit", "fine"], correct: 3, exp: "fine は名詞で「罰金」を意味します。", cat: "過去問 大問1" },
+            { id: "p1_30", type: "choice", q: "You (               ) it, Henry. You worked really hard.", a: ["regret", "deserve", "forget", "miss"], correct: 1, exp: "deserve「〜に値する」。頑張ったから満点は当然だ、の意味。", cat: "過去問 大問1" }
+        ];
+
+        const pastDataP2 = [
+            { id: "p2_01", type: "scramble", jp: "どうぞご自由にコーヒーをお召し上がりください。", fixed: ["Please", "."], words: ["some", "coffee", "to", "help", "yourself"], correct: "help yourself to some coffee", exp: "help yourself to ~ で「〜を自由に食べる/飲む」。", cat: "過去問 大問2" },
+            { id: "p2_02", type: "scramble", jp: "私は英語よりもむしろドイツ語を学びたいと思っています。", fixed: ["I", "English."], words: ["rather", "would", "than", "learn", "German"], correct: "would rather learn German than", exp: "would rather A than B で「BよりむしろAしたい」。", cat: "過去問 大問2" },
+            { id: "p2_03", type: "scramble", jp: "彼はその事件とは何の関係もありません。", fixed: ["He has", "case."], words: ["with", "the", "do", "nothing", "to"], correct: "nothing to do with the", exp: "have nothing to do with ~「〜と何の関係もない」。", cat: "過去問 大問2" },
+            { id: "p2_04", type: "scramble", jp: "私をだまそうとしても無駄です。", fixed: ["It", "me."], words: ["is", "use", "no", "trying", "to", "deceive"], correct: "is no use trying to deceive", exp: "It is no use ~ing で「〜しても無駄だ」。", cat: "過去問 大問2" },
+            { id: "p2_05", type: "scramble", jp: "このパンフレットを見れば、その寺の構造がよくわかります。", fixed: ["This pamphlet will", "the temple is constructed."], words: ["a good", "idea", "of", "how", "give", "you"], correct: "give you a good idea of how", exp: "give A a good idea of B で「AにBの概要をよくわからせる」。", cat: "過去問 大問2" },
+            { id: "p2_06", type: "scramble", jp: "公園でその猫を見かけたかもしれないが、確かではない。", fixed: ["", "the park, but I'm not sure."], words: ["have", "cat", "I", "may", "the", "seen", "in"], correct: "I may have seen the cat in", exp: "may have + p.p. で「〜したかもしれない」。", cat: "過去問 大問2" },
+            { id: "p2_07", type: "scramble", jp: "もう一度北海道に行くと、5回行ったことになる。", fixed: ["I", "I go there again."], words: ["will", "been", "Hokkaido", "five times", "have", "to", "if"], correct: "will have been to Hokkaido five times if", exp: "未来の特定時点での経験を表す未来完了形。", cat: "過去問 大問2" },
+            { id: "p2_08", type: "scramble", jp: "先生は私に、ノックせずに彼女の部屋に入らないようにと言った。", fixed: ["My teacher", "room without knocking."], words: ["to", "me", "not", "told", "come", "her", "into"], correct: "told me not to come into her", exp: "tell A not to do で「Aに〜しないように言う」。", cat: "過去問 大問2" },
+            { id: "p2_09", type: "scramble", jp: "父は私を駅で15分待たせた。", fixed: ["My father", "station."], words: ["waiting", "for", "kept", "fifteen minutes", "the", "at", "me"], correct: "kept me waiting for fifteen minutes at the", exp: "keep A waiting で「Aを待たせておく」。", cat: "過去問 大問2" },
+            { id: "p2_10", type: "scramble", jp: "彼女は1キロ歩かぬうちに脚が痛み出した。", fixed: ["Scarcely", "legs began aching."], words: ["one", "had", "when", "kilometer", "she", "walked", "her"], correct: "had she walked one kilometer when her", exp: "Scarcely + 過去完了(倒置) ... when で「〜するかしないうちに」。", cat: "過去問 大問2" },
+            { id: "p2_11", type: "scramble", jp: "彼女はダンサーだと言われている。", fixed: ["", "."], words: ["It", "is", "said", "that", "she", "is", "a dancer"], correct: "It is said that she is a dancer", exp: "It is said that S+V で「〜だと言われている」。", cat: "過去問 大問2" },
+            { id: "p2_12", type: "scramble", jp: "その車を買うのに十分なお金があればよかったのになあ。", fixed: ["", "."], words: ["I", "wish", "I", "had", "had", "enough", "money", "to buy", "the car"], correct: "I wish I had had enough money to buy the car", exp: "I wish + 過去の事実に反する願望（仮定法過去完了）。", cat: "過去問 大問2" },
+            { id: "p2_13", type: "scramble", jp: "好きなものは何でも買っていいよ。", fixed: ["", "."], words: ["You", "can", "buy", "whatever", "you", "like"], correct: "You can buy whatever you like", exp: "whatever ~ は「〜なものは何でも」という複合関係代名詞です。", cat: "過去問 大問2" },
+            { id: "p2_14", type: "scramble", jp: "トムは近所の人とうまく付き合っている。", fixed: ["Tom", "."], words: ["his", "along", "is getting", "with", "neighbors"], correct: "is getting along with his neighbors", exp: "get along with ~ で「〜とうまくやっていく」。", cat: "過去問 大問2" },
+            { id: "p2_15", type: "scramble", jp: "彼は私の2倍の本を持っている。", fixed: ["He has", "as I have."], words: ["as", "many", "books", "twice", "as"], correct: "twice as many books as", exp: "倍数比較は <倍数詞 + as ~ as> の語順です。", cat: "過去問 大問2" }
+        ];
+
+        const pastDataP3 = [
+            { id: "p3_01", type: "choice", q: "A: Excuse me. Could you help me?\nB: Sure. What can I do for you?\nA: Do you know where the (               ) to the building is?\nB: The door is right over there.", a: ["elevator", "entrance", "bridge", "stairway"], correct: 1, exp: "Bの回答「ドアはあそこだ」から「入り口」を聞いているとわかります。", cat: "過去問 大問3" },
+            { id: "p3_02", type: "choice", q: "A: Are you going abroad this summer?\nB: I'd like to, but (               ).\nA: I know what you mean. Airplane tickets cost a lot.\nB: I hope I can save enough money.", a: ["tickets cost a lot", "too dangerous", "allergies are bad", "not sure where"], correct: 0, exp: "Aの「航空券は高い」という返答から、費用の話をしている0番が正解。", cat: "過去問 大問3" },
+            { id: "p3_03", type: "choice", q: "A: Did you ask your parents about Osaka?\nB: They told me it's (               ) until after my tests.\nA: So, you can't go.\nB: Definitely not.", a: ["possibility", "only thing", "out of the question", "best for me"], correct: 2, exp: "out of the question「論外、不可能」。", cat: "過去問 大問3" },
+            { id: "p3_04", type: "choice", q: "A: It's really raining.\nB: Yes. You should (               ) the river today.\nA: I'll avoid it and take the other road.\nB: Good idea.", a: ["go across", "not go swimming", "take a picture", "stay away from"], correct: 3, exp: "Aが「避ける(avoid)」と言っているので、stay away fromが正解。", cat: "過去問 大問3" },
+            { id: "p3_05", type: "choice", q: "A: How to use this ticket machine?\nB: Sure. (               )\nA: I need to go to the airport.\nB: OK! Just push this button.", a: ["How to pay?", "Where to go?", "Never used?", "Difficult to buy"], correct: 1, exp: "Aの返答が目的地なので、目的地を尋ねる質問を選びます。", cat: "過去問 大問3" },
+            { id: "p3_06", type: "choice", q: "A: Where is that fish from?\nB: Tokushima. I try to buy local food.\nA: (               )\nB: Less distance means less impact on the environment.", a: ["Like fish?", "Is it famous?", "Problems?", "Why do you do that?"], correct: 3, exp: "理由を説明しているので、理由を問う質問が適切。", cat: "過去問 大問3" },
+            { id: "p3_07", type: "choice", q: "A: Keiko, what's wrong?\nB: I lost the book you lent me.\nA: Don't worry. (               )\nB: Are you sure?", a: ["Need it for test", "Buy new one", "Have another copy", "Important book"], correct: 2, exp: "「心配しないで」と繋がる理由「もう一冊ある」が正解。", cat: "過去問 大問3" },
+            { id: "p3_08", type: "choice", q: "A: What to do after graduation?\nB: Travel around Europe.\nA: (               )\nB: I hope to visit museums for free.", a: ["Why Europe?", "Good place?", "Been to America", "When leave?"], correct: 0, exp: "動機を聞く質問に対し、目的を答えています。", cat: "過去問 大問3" }
+        ];
+
+        const pastDataP4 = [
+            {
+                id: "p4_01",
+                passage: `Do you use the Internet for shopping? It is certainly convenient. ${b('①')} on some websites, popular items are often sold out. Products might be sold out because of people ${b('②')} resellers. Resellers buy products at normal prices and then sell them later for higher prices. ${u('They', '③')} will resell anything, but popular categories for ${b('④')} are sneakers, trading cards, smartphones and toys.\n\nIn recent years, more and more people are reselling items. For some people, it is a full-time job and they can make a lot of money. Is reselling a positive or negative thing? This is a difficult question and many people have strong opinions about it. ${b('⑤')} most people are against reselling. They think that resellers buy products only to make a ${u('profit', '⑥')} not to use themselves. When ordinary people try to buy an item, it is already sold out. The only option is to pay a higher price on a flea market app.\n\nOn the other hand, some people think that resellers provide a valuable service. ${b('⑦')} when a popular new product is sold, people line up outside the shop to buy it. But for most of us, lining up is impossible—we are too busy with work or school. However, if resellers line up, buy ${u('the item', '⑧')} and then resell later, we have a chance to get the item, although the price is higher of course.\n\nWhat do you think? Are you for or against reselling? (⑨)\n\n<div class="annotation-box">ordinary：普通の / flea market app：フリマアプリ</div>`,
+                questions: [
+                    { id: "p4_01_1", type: "choice", q: "(1) 空所 ①, ⑤, ⑦ に入る適切な語の組み合わせを選べ。", a: ["① however / ⑤ Probably / ⑦ For example", "① therefore / ⑤ Usually / ⑦ Thus", "① however / ⑤ Therefore / ⑦ However", "① instead / ⑤ Probably / ⑦ Thus"], correct: 0, exp: "文脈判断問題。①逆接 ⑤推測 ⑦例示 です。", cat: "過去問 大問4" },
+                    { id: "p4_01_2", type: "choice", q: "(2) 空所 ②, ④ に入る動詞の適切な形の組み合わせを選べ。", a: ["② calling / ④ reselling", "② called / ④ reselling", "② called / ④ resold", "② calling / ④ resell"], correct: 1, exp: "②呼ばれている人々(called) ④転売すること(reselling)のため。", cat: "過去問 大問4" },
+                    { id: "p4_01_3", type: "choice", q: "(3) 下線部 ③ They の指す内容と ⑧ the item の具体的な単語数を選べ。", a: ["③ Resellers (1語) / ⑧ a popular new product (4語)", "③ Websites (1語) / ⑧ flea market app (3語)", "③ Products (1語) / ⑧ a lot of money (4語)", "③ Toys (1語) / ⑧ sneakers and cards (3語)"], correct: 0, exp: "指し示し問題。Resellers と a popular new product を指します。", cat: "過去問 大問4" },
+                    { id: "p4_01_4", type: "choice", q: "(4) 下線部 ⑥ profit の意味として適切なものを選べ。", a: ["自慢", "企画", "満足", "利益"], correct: 3, exp: "make a profit で「利益をあげる」。", cat: "過去問 大問4" },
+                    { id: "p4_01_5", type: "choice", q: "(5) 本文の内容と一致するものはどれか。", a: ["Resellers buy unpopular items at lower prices.", "Some items might be sold out because of resellers.", "Food products are popular and easy to resell.", "Most people are for reselling."], correct: 1, exp: "第1段落の内容と一致します。他は記述に反します。", cat: "過去問 大問4" }
+                ]
+            },
+            {
+                id: "p4_02",
+                passage: `Though the construction industry has traditionally been seen as a man's world, ${u('the government and construction industry organizations are trying to make construction sites more woman-friendly', '①')}.\n\nIzumi Yamaguchi, 28, an employee of Shimizu Corp., works as a supervisor at a construction site... Among 16 supervisors at the building site, Yamaguchi is the only woman. ${b('②')} Yamaguchi wears a helmet, steel-toed shoes and a safety belt ${u('equipped with', '③')} a lifeline and other items around her waist.\n\nGeneral contractors have been making efforts to improve working conditions at construction sites by, for example, providing bathrooms and changing rooms ${u('exclusively', '④')} for women. They also have begun reforming personnel management systems... Kajima Corp. holds career consultations for female engineers. Junko Tsuchiyama, an official ${b('⑤')} the ${u('promotion', '⑥')} of diversity, said, "At today's more mechanized construction sites, women can play a larger role..."\n\n<div class="annotation-box">construction site：建設現場 / supervisor：監督 / personnel affairs：人事</div>`,
+                questions: [
+                    { id: "p4_02_1", type: "choice", q: "(1) 下線部 ① に関して企業がしている努力の具体例として適切なものは？", a: ["女性専用のトイレや更衣室の設置", "女性のみの建設現場の作成", "給与の倍増計画", "男性作業員の削減"], correct: 0, exp: "本文に「providing bathrooms and changing rooms exclusively for women」とあります。", cat: "過去問 大問4" },
+                    { id: "p4_02_2", type: "choice", q: "(2) 空所 ②, ⑤ に入る最も適当なものは？", a: ["② On the job / ⑤ in charge of", "② In operation / ⑤ in terms of", "② While running / ⑤ in spite of", "② On the job / ⑤ in spite of"], correct: 0, exp: "現場仕事中（On the job）と、〜の担当（in charge of）です。", cat: "過去問 大問4" },
+                    { id: "p4_02_3", type: "choice", q: "(3) 下線部 ③, ④, ⑥ と入れ替えてもほぼ同じ意味になるものは？", a: ["③ complete with / ④ entirely / ⑥ elevation", "③ occupied with / ④ individually / ⑥ publicity", "③ complete with / ④ additionally / ⑥ elevation", "③ in accordance with / ④ entirely / ⑥ advertisement"], correct: 0, exp: "語彙の言い換え問題です。", cat: "過去問 大問4" },
+                    { id: "p4_02_4", type: "choice", q: "(4) 下線部 ⑦（記述）の変化の内容として正しい要約は？", a: ["働き方を変えることで男性も快適になり業界イメージが向上する", "女性だけが快適になれば業界イメージが向上する", "機械化が進むことで人間が不要になりイメージが向上する", "子供を育てる女性だけを優遇する"], correct: 0, exp: "土山さんの発言の後半部分をまとめた内容です。", cat: "過去問 大問4" }
+                ]
+            },
+            {
+                id: "p4_03",
+                passage: `Do you know what your core values are? Core values are ${u('attributes', '①')} that are very important to you. For example, if you have a ${u('burning', '②')} desire to be number one, then working hard, doing your best, and ( ③ ) are likely to be some of your core values...\n\n"Here are the values that I ${u('stand for', '④')}: honesty, equality, kindness, compassion, treating people the way you want to be treated, and ( ⑤ ). To me, those are traditional values."\n\nYou can discover your own core values by asking yourself questions... Another way to discover your values is to look at what you do not like. For example, if you become irritated when people are late, then being on time, or ${b('⑥')} is one of your values. If seeing someone being bullied makes you angry, then compassion and ${b('⑦')} are important to you.\n\n<div class="annotation-box">attribute：特性 / punctuality：時間を守ること / fairness：公正さ</div>`,
+                questions: [
+                    { id: "p4_03_1", type: "choice", q: "(1) 下線部 ①, ②, ④ とほぼ同じ意味を表す語の組み合わせは？", a: ["① characteristics / ② passionate / ④ support", "① dreams / ② passionate / ④ mean", "① characteristics / ② flaming / ④ endure", "① virtues / ② aching / ④ support"], correct: 0, exp: "①属性 ②情熱的な ④支持する（理念とする）です。", cat: "過去問 大問4" },
+                    { id: "p4_03_2", type: "choice", q: "(2)(3) 空所 ③, ⑤, ⑥, ⑦ に入る語句の組み合わせは？", a: ["③ achieving success / ⑤ helping those in need / ⑥ punctuality / ⑦ fairness", "③ reducing wastes / ⑤ achieving success / ⑥ excitement / ⑦ honesty", "③ achieving success / ⑤ honesty / ⑥ punctuality / ⑦ excitement", "③ working hard / ⑤ helping those / ⑥ fairness / ⑦ punctuality"], correct: 0, exp: "文脈と、文末の注釈も参考に判断します。", cat: "過去問 大問4" },
+                    { id: "p4_03_3", type: "choice", q: "(4) 最初に述べられている価値観を知る方法は？", a: ["子供の頃好きだったことなどを自分に問いかける", "嫌いなものをリストアップする", "他人の価値観を真似してみる", "社会の期待に応える決断をする"], correct: 0, exp: "第3段落の冒頭に「discovery by asking yourself questions」とあります。", cat: "過去問 大問4" },
+                    { id: "p4_03_4", type: "choice", q: "(5) 目標や決断は何に基づいてすべきと述べられているか？", a: ["自分の核となる価値観(Core values)", "社会の期待", "周囲の人の意見", "最新のトレンド"], correct: 0, exp: "最終段落に「Knowing your own core values will help to guide your actions」とあります。", cat: "過去問 大問4" }
+                ]
+            }
+        ];
+
+        // --- 模擬試験データ ---
+        const mockP1Data = Array.from({ length: 100 }, (_, i) => ({ id: `m1_${i}`, type: "choice", q: `模擬問題 大問1-${i + 1}：The result of the survey (               ) that many people are concerned about the environment.`, a: ["shows", "show", "is showing", "to show"], correct: 0, exp: "主語(result)が単数なので三単現のsが必要です。", cat: "模擬 大問1" }));
+        const mockP2Data = Array.from({ length: 50 }, (_, i) => ({ id: `m2_${i}`, type: "scramble", jp: `模擬問題 大問2-${i + 1}：彼女はピアノを弾くのが上手です。`, fixed: ["She is", "the piano."], words: ["at", "playing", "good"], correct: "good at playing", exp: "be good at ~ing で「〜するのが得意だ」。", cat: "模擬 大問2" }));
+        const mockP3Data = Array.from({ length: 50 }, (_, i) => ({ id: `m3_${i}`, type: "choice", q: `模擬問題 大問3-${i + 1}\nA: Would you like another cup of tea?\nB: (               )`, a: ["Yes, please.", "No, I don't.", "I like tea.", "I'm busy now."], correct: 0, exp: "勧められた時の丁寧な承諾表現です。", cat: "模擬 大問3" }));
+
+        const quizApp = {
+            allQuestions: [],
+            currentIdx: 0,
+            score: 0,
+            isAnswered: false,
+            userOrder: [],
+            mode: '',
+            passageList: [],
+            currentPassageIdx: 0,
+
+            init: function (mode) {
+                this.mode = mode;
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                document.getElementById('score-area').classList.remove('hidden');
+                document.getElementById('reading-passage').classList.add('hidden');
+
+                if (mode === 'past_p1') this.allQuestions = [...pastDataP1];
+                else if (mode === 'past_p2') this.allQuestions = [...pastDataP2];
+                else if (mode === 'past_p3') this.allQuestions = [...pastDataP3];
+                else if (mode === 'past_p4_random') {
+                    const pass = pastDataP4[Math.floor(Math.random() * pastDataP4.length)];
+                    this.passageList = [pass];
+                    this.setupReadingMode();
+                }
+                else if (mode === 'past_p4_all') {
+                    this.passageList = [...pastDataP4];
+                    this.setupReadingMode();
+                }
+                else if (mode === 'mock_p1_random') this.allQuestions = [...mockP1Data].sort(() => 0.5 - Math.random()).slice(0, 10);
+                else if (mode === 'mock_p1_all') this.allQuestions = [...mockP1Data];
+                else if (mode === 'mock_p2_random') this.allQuestions = [...mockP2Data].sort(() => 0.5 - Math.random()).slice(0, 10);
+                else if (mode === 'mock_p2_all') this.allQuestions = [...mockP2Data];
+                else if (mode === 'mock_p3_random') this.allQuestions = [...mockP3Data].sort(() => 0.5 - Math.random()).slice(0, 10);
+                else if (mode === 'mock_p3_all') this.allQuestions = [...mockP3Data];
+                else if (mode === 'weak_review') {
+                    this.allQuestions = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                }
+
+                if (!mode.includes('p4')) {
+                    if (this.allQuestions.length === 0) { this.goHome(); return; }
+                    this.currentIdx = 0;
+                    this.score = 0;
+                    this.updateScore();
+                    this.loadQuestion();
+                }
+            },
+
+            setupReadingMode: function () {
+                this.currentPassageIdx = 0;
+                this.allQuestions = this.passageList[0].questions;
+                this.currentIdx = 0;
+                this.score = 0;
+                document.getElementById('reading-passage').innerHTML = this.passageList[0].passage;
+                document.getElementById('reading-passage').classList.remove('hidden');
+                this.updateScore();
+                this.loadQuestion();
+            },
+
+            loadQuestion: function () {
+                this.isAnswered = false;
+                this.userOrder = [];
+                const q = this.allQuestions[this.currentIdx];
+
+                document.getElementById('question-number').innerText = `Q${this.currentIdx + 1} / ${this.allQuestions.length}`;
+                document.getElementById('mode-badge').innerText = q.cat;
+                document.getElementById('progress-fill').style.width = `${(this.currentIdx / this.allQuestions.length) * 100}%`;
+                document.getElementById('explanation-area').style.display = 'none';
+                document.getElementById('next-btn').classList.add('hidden');
+
+                if (q.type === 'choice') {
+                    this.renderChoice(q);
+                } else {
+                    this.renderScramble(q);
+                }
+            },
+
+            renderChoice: function (q) {
+                document.getElementById('jp-text').classList.add('hidden');
+                document.getElementById('question-text').innerHTML = q.q;
+                document.getElementById('options-container').classList.remove('hidden');
+                document.getElementById('scramble-container').classList.add('hidden');
+
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+                q.a.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "option-btn text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-[#005088] font-medium transition-all flex items-center gap-3 bg-slate-50";
+                    btn.innerHTML = `<span class="flex-shrink-0 w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold">${idx + 1}</span> <span>${opt}</span>`;
+                    btn.onclick = () => this.checkChoice(idx, btn);
+                    container.appendChild(btn);
+                });
+            },
+
+            renderScramble: function (q) {
+                document.getElementById('jp-text').classList.remove('hidden');
+                document.getElementById('jp-text').innerText = `和訳: ${q.jp}`;
+                document.getElementById('question-text').innerText = (q.fixed[0] || "") + " (               ) " + (q.fixed[1] || "");
+                document.getElementById('options-container').classList.add('hidden');
+                document.getElementById('scramble-container').classList.remove('hidden');
+                this.resetScramble();
+            },
+
+            resetScramble: function () {
+                if (this.isAnswered) return;
+                this.userOrder = [];
+                const q = this.allQuestions[this.currentIdx];
+                const pool = document.getElementById('word-pool');
+                const built = document.getElementById('built-sentence');
+                built.innerHTML = '<span class="text-slate-400 text-sm italic text-xs">単語をタップしてください...</span>';
+                pool.innerHTML = '';
+                [...q.words].sort(() => 0.5 - Math.random()).forEach(word => {
+                    const chip = document.createElement('span');
+                    chip.className = "word-chip bg-white px-4 py-2 rounded-xl border-2 border-slate-200 shadow-sm font-bold text-slate-700 text-sm";
+                    chip.innerText = word;
+                    chip.onclick = () => this.addWord(word, chip);
+                    pool.appendChild(chip);
+                });
+            },
+
+            addWord: function (word, chip) {
+                if (this.isAnswered) return;
+                const built = document.getElementById('built-sentence');
+                if (this.userOrder.length === 0) built.innerHTML = '';
+                this.userOrder.push(word);
+                chip.classList.add('selected');
+                const newChip = document.createElement('span');
+                newChip.className = "bg-[#11caa0] text-white px-3 py-1 rounded-lg font-bold text-sm transition-all";
+                newChip.innerText = word;
+                built.appendChild(newChip);
+            },
+
+            checkChoice: function (idx, btn) {
+                if (this.isAnswered) return;
+                this.isAnswered = true;
+                const q = this.allQuestions[this.currentIdx];
+                const btns = document.querySelectorAll('.option-btn');
+                const isCorrect = (idx === q.correct);
+                if (isCorrect) {
+                    btn.classList.add('correct');
+                    this.score++;
+                    if (this.mode === 'weak_review') this.removeFromWeak(q.id);
+                } else {
+                    btn.classList.add('wrong');
+                    btns[q.correct].classList.add('correct');
+                    this.addToWeak(q);
+                }
+                this.updateScore();
+                this.showExplanation(q.exp);
+            },
+
+            checkScramble: function () {
+                if (this.isAnswered || this.userOrder.length === 0) return;
+                this.isAnswered = true;
+                const q = this.allQuestions[this.currentIdx];
+                const built = document.getElementById('built-sentence');
+                const userSent = this.userOrder.join(' ').toLowerCase();
+                const correctSent = q.correct.toLowerCase();
+                if (userSent === correctSent) {
+                    built.classList.add('bg-green-50', 'border-green-500');
+                    this.score++;
+                    if (this.mode === 'weak_review') this.removeFromWeak(q.id);
+                } else {
+                    built.classList.add('bg-red-50', 'border-red-500');
+                    const msg = document.createElement('div');
+                    msg.className = "w-full mt-2 text-[10px] text-red-600 font-bold";
+                    msg.innerText = `[正解]: ${q.correct}`;
+                    built.appendChild(msg);
+                    this.addToWeak(q);
+                }
+                this.updateScore();
+                this.showExplanation(q.exp);
+            },
+
+            addToWeak: function (question) {
+                let weakOnes = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                if (!weakOnes.some(item => item.id === question.id)) {
+                    weakOnes.push(question);
+                    localStorage.setItem('weak_questions', JSON.stringify(weakOnes));
+                }
+            },
+
+            removeFromWeak: function (id) {
+                let weakOnes = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                weakOnes = weakOnes.filter(item => item.id !== id);
+                localStorage.setItem('weak_questions', JSON.stringify(weakOnes));
+            },
+
+            updateScore: function () {
+                document.getElementById('score-display').innerText = `Score: ${this.score}`;
+            },
+
+            showExplanation: function (text) {
+                document.getElementById('explanation-text').innerText = text;
+                document.getElementById('explanation-area').style.display = 'block';
+                document.getElementById('next-btn').classList.remove('hidden');
+                setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+            },
+
+            nextQuestion: function () {
+                this.currentIdx++;
+                if (this.currentIdx < this.allQuestions.length) {
+                    this.loadQuestion();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    if ((this.mode === 'past_p4_all') && this.currentPassageIdx < this.passageList.length - 1) {
+                        this.currentPassageIdx++;
+                        this.allQuestions = this.passageList[this.currentPassageIdx].questions;
+                        this.currentIdx = 0;
+                        document.getElementById('reading-passage').innerHTML = this.passageList[this.currentPassageIdx].passage;
+                        this.loadQuestion();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        this.showResults();
+                    }
+                }
+            },
+
+            showResults: function () {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                const total = (this.mode === 'past_p4_all') ? this.passageList.reduce((acc, p) => acc + p.questions.length, 0) : this.allQuestions.length;
+                document.getElementById('result-score-box').innerText = `${this.score} / ${total}`;
+                const percent = (this.score / total) * 100;
+                const msg = document.getElementById('result-message');
+                if (percent >= 80) msg.innerText = "素晴らしい！合格圏内です。この調子で頑張りましょう！";
+                else if (percent >= 60) msg.innerText = "まずまずです。間違えた問題を復習して、完璧を目指しましょう。";
+                else msg.innerText = "基礎をしっかり固めるチャンスです！ホームに戻って苦手克服を進めましょう。";
+            },
+
+            goHome: function () {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('score-area').classList.add('hidden');
+                document.getElementById('start-screen').classList.remove('hidden');
+                document.getElementById('reading-passage').classList.add('hidden');
+                this.updateWeakUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            updateWeakUI: function () {
+                const weakOnes = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                const section = document.getElementById('weak-section');
+                const countElem = document.getElementById('weak-count');
+                if (weakOnes.length > 0) {
+                    section.classList.remove('hidden');
+                    countElem.innerText = weakOnes.length;
+                } else {
+                    section.classList.add('hidden');
+                }
+            }
+        };
+        // ランダム背景画像（Unsplash - 勉強・大学・図書館テーマ）
+        const backgroundImages = [
+            'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1920', // 図書館
+            'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1920', // 本棚
+            'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1920', // 勉強机
+            'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1920', // ノートとコーヒー
+            'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1920', // 勉強風景
+            'https://images.unsplash.com/photo-1568667256549-094345857637?w=1920', // 大学図書館
+            'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1920', // 積み重ねた本
+            'https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?w=1920', // キャンパス
+        ];
+
+        function setRandomBackground() {
+            const randomIndex = Math.floor(Math.random() * backgroundImages.length);
+            const bgElement = document.getElementById('bg-image');
+            if (bgElement) {
+                bgElement.style.backgroundImage = `url('${backgroundImages[randomIndex]}')`;
+            }
+        }
+
+        window.onload = () => {
+            setRandomBackground();
+            quizApp.updateWeakUI();
+        };
+    </script>
+</body>
+
+</html>
