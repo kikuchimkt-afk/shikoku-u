@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ Shikoku-U English Cafe | 四国大学 英語対策</title>
+    <meta name="description" content="四国大学 英語入試対策アプリ。カフェでくつろぐように、楽しく英語を学びましょう。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --cafe-cream: #fdfbf7;
+            --cafe-latte: #8d6e63;
+            --cafe-mocha: #5d4037;
+            --cafe-pink: #ffab91;
+            --cafe-mint: #a5d6a7;
+            --cafe-gold: #ffcc80;
+        }
+
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background: linear-gradient(135deg, var(--cafe-cream) 0%, #fff9f0 100%);
+            min-height: 100vh;
+        }
+
+        /* 共通カラー・判定用 */
+        .correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            color: #166534 !important;
+        }
+
+        .wrong {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
+        }
+
+        /* アニメーション */
+        .explanation-card {
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* メニューカード */
+        .menu-card {
+            transition: all 0.3s ease;
+            border-width: 2px;
+            cursor: default;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 長文読解用スタイル */
+        .reading-text-area {
+            max-height: 45vh;
+            overflow-y: auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+            line-height: 2.2;
+            font-size: 1.15rem;
+            font-family: 'Noto Serif JP', serif;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 空所マーカー（バッジ） */
+        .blank-marker {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #005088;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 0 10px;
+            margin: 0 4px;
+            font-weight: bold;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 0.9em;
+            vertical-align: middle;
+        }
+
+        /* 下線部マーカー（オレンジ） */
+        .underline-marker {
+            text-decoration: none;
+            border-bottom: 4px solid #f59e0b;
+            padding-bottom: 2px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .ref-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f59e0b;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .annotation-box {
+            font-size: 0.85rem;
+            color: #475569;
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+            border-left: 4px solid #cbd5e1;
+        }
+
+        .dialogue-text {
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+
+        /* 整序英作文チップ */
+        .word-chip {
+            transition: all 0.2s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .word-chip:active {
+            transform: scale(0.95);
+        }
+
+        .word-chip.selected {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-[#1e3a5f] to-[#2d5a87] text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="quizApp.goHome()" class="hover:bg-white/20 p-2 rounded-lg transition-all"
+                    title="ホームへ戻る">
+                    <i class="fa-solid fa-house text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wider leading-none">四国大学 英語対策</h1>
+                    <p class="text-[10px] opacity-80 mt-1">SHIKOKU UNIVERSITY PREP</p>
+                </div>
+            </div>
+            <div id="score-area" class="text-right hidden">
+                <span id="score-display"
+                    class="bg-emerald-400 text-emerald-900 px-4 py-1 rounded-full text-xs font-bold shadow-sm">Score:
+                    0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4">
+        <!-- Start Screen -->
+        <div id="start-screen" class="space-y-12">
+
+            <!-- ★ ヒーローセクション -->
+            <section
+                class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e3a5f] via-[#2d5a87] to-[#3d7ab3] text-white py-16 px-8 md:py-20 md:px-12 mt-6 shadow-2xl">
+                <div
+                    class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2">
+                </div>
+                <div class="relative z-10 text-center">
+                    <p class="text-blue-200 text-sm font-bold tracking-widest mb-4">SHIKOKU UNIVERSITY</p>
+                    <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">
+                        英語入試<br class="md:hidden">完全対策
+                    </h1>
+                    <p class="text-blue-100 text-lg md:text-xl mb-8 max-w-2xl mx-auto">
+                        過去問分析に基づいた効率的な学習で、<br class="hidden md:block">
+                        四国大学合格への最短ルートを歩みましょう。
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="#practice-section"
+                            class="bg-white text-[#1e3a5f] px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-50 transition-all hover:scale-105">
+                            <i class="fa-solid fa-play mr-2"></i>今すぐ練習を始める
+                        </a>
+                        <a href="#analysis-section"
+                            class="border-2 border-white/50 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all">
+                            <i class="fa-solid fa-chart-line mr-2"></i>入試分析を見る
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ★ 入試分析セクション -->
+            <section id="analysis-section" class="bg-white rounded-3xl shadow-lg p-8 md:p-12 border border-slate-100">
+                <div class="text-center mb-10">
+                    <span class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-sm font-bold">📊 EXAM
+                        ANALYSIS</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-4">四国大学 英語入試の傾向と対策</h2>
+                    <p class="text-slate-500 mt-2">過去問を徹底分析。効率よく得点力をアップさせましょう。</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <!-- 大問1 -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div
+                                class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold">
+                                1</div>
+                            <h3 class="font-bold text-blue-900">空所補充</h3>
+                        </div>
+                        <p class="text-sm text-blue-700 mb-3">文法・語彙の正確な知識を問う。イディオム・前置詞が頻出。</p>
+                        <div class="text-xs text-blue-600 font-bold">📝 30問 / 配点目安: 30点</div>
+                    </div>
+                    <!-- 大問2 -->
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div
+                                class="w-10 h-10 bg-green-600 text-white rounded-xl flex items-center justify-center font-bold">
+                                2</div>
+                            <h3 class="font-bold text-green-900">整序英作文</h3>
+                        </div>
+                        <p class="text-sm text-green-700 mb-3">日本語から英文を組み立てる。構文知識と語順感覚が重要。</p>
+                        <div class="text-xs text-green-600 font-bold">📝 15問 / 配点目安: 20点</div>
+                    </div>
+                    <!-- 大問3 -->
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div
+                                class="w-10 h-10 bg-amber-600 text-white rounded-xl flex items-center justify-center font-bold">
+                                3</div>
+                            <h3 class="font-bold text-amber-900">会話文</h3>
+                        </div>
+                        <p class="text-sm text-amber-700 mb-3">日常会話の空所補充。文脈理解と会話表現の知識が鍵。</p>
+                        <div class="text-xs text-amber-600 font-bold">📝 8問 / 配点目安: 20点</div>
+                    </div>
+                    <!-- 大問4 -->
+                    <div
+                        class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div
+                                class="w-10 h-10 bg-purple-600 text-white rounded-xl flex items-center justify-center font-bold">
+                                4</div>
+                            <h3 class="font-bold text-purple-900">長文読解</h3>
+                        </div>
+                        <p class="text-sm text-purple-700 mb-3">300〜400語程度の英文。内容一致・語彙推測・指示語問題。</p>
+                        <div class="text-xs text-purple-600 font-bold">📝 3題 / 配点目安: 30点</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>合格のポイント
+                    </h3>
+                    <ul class="space-y-3 text-slate-600">
+                        <li class="flex items-start gap-3">
+                            <span
+                                class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0">1</span>
+                            <span><strong>大問1・2で確実に得点</strong>：基礎文法とイディオムを固めれば安定した得点源に。</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span
+                                class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0">2</span>
+                            <span><strong>会話表現は定型を覚える</strong>：頻出パターンを押さえれば短時間で解ける。</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span
+                                class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
+                            <span><strong>長文は時間配分が命</strong>：全体を読む前に設問をチェックし、必要箇所を重点的に読む。</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ★ 練習セクション -->
+            <section id="practice-section">
+                <div class="text-center mb-8">
+                    <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-bold">✍️
+                        PRACTICE</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-4">問題演習</h2>
+                    <p class="text-slate-500 mt-2">過去問や模擬試験で実践力を鍛えましょう。</p>
+                </div>
+            </section>
+
+            <!-- 苦手問題復習 -->
+            <section id="weak-section" class="hidden">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-2 h-8 bg-red-500 rounded-full shadow-sm"></div>
+                    <h2 class="text-xl font-bold text-slate-800">苦手克服</h2>
+                </div>
+                <button onclick="quizApp.init('weak_review')"
+                    class="w-full bg-white p-6 rounded-3xl shadow-lg border-2 border-red-50 hover:border-red-500 text-left transition-all flex justify-between items-center group">
+                    <div class="flex items-center gap-6">
+                        <div
+                            class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 text-3xl shadow-inner">
+                            <i class="fa-solid fa-fire-flame-curved"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-red-600 text-xl">苦手問題を復習する</h3>
+                            <p class="text-sm text-slate-500 mt-1">間違えた問題を解き直して完全に習得しましょう。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="weak-count"
+                            class="bg-red-500 text-white px-4 py-2 rounded-full text-lg font-black shadow-md">0</span>
+                        <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-red-500 text-xl"></i>
+                    </div>
+                </button>
+            </section>
+
+            <!-- 過去問演習 -->
+            <section class="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">過去問演習</h3>
+                        <p class="text-xs text-slate-500">実際の出題形式で練習</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div
+                        class="bg-blue-50 p-5 rounded-2xl border border-blue-100 text-center hover:shadow-md transition-all">
+                        <div class="text-blue-600 text-2xl mb-3"><i class="fa-solid fa-list-check"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">大問1：空所補充</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">文法・語彙（30問）</p>
+                        <button onclick="quizApp.init('past_p1')"
+                            class="w-full bg-blue-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-blue-700 shadow-sm">
+                            スタート</button>
+                    </div>
+                    <div
+                        class="bg-green-50 p-5 rounded-2xl border border-green-100 text-center hover:shadow-md transition-all">
+                        <div class="text-green-600 text-2xl mb-3"><i class="fa-solid fa-sort"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">大問2：整序英作文</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">並べ替え（15問）</p>
+                        <button onclick="quizApp.init('past_p2')"
+                            class="w-full bg-green-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-green-700 shadow-sm">
+                            スタート</button>
+                    </div>
+                    <div
+                        class="bg-amber-50 p-5 rounded-2xl border border-amber-100 text-center hover:shadow-md transition-all">
+                        <div class="text-amber-600 text-2xl mb-3"><i class="fa-solid fa-comments"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">大問3：会話文</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">空所補充（8問）</p>
+                        <button onclick="quizApp.init('past_p3')"
+                            class="w-full bg-amber-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-amber-700 shadow-sm">
+                            スタート</button>
+                    </div>
+                    <div
+                        class="bg-purple-50 p-5 rounded-2xl border border-purple-100 text-center hover:shadow-md transition-all">
+                        <div class="text-purple-600 text-2xl mb-3"><i class="fa-solid fa-book-open"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">大問4：長文読解</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">読解（3題）</p>
+                        <div class="grid grid-cols-2 gap-2 w-full">
+                            <button onclick="quizApp.init('past_p4_random')"
+                                class="bg-purple-100 text-purple-700 py-2 rounded-xl text-[10px] font-bold hover:bg-purple-200 border border-purple-200">1題</button>
+                            <button onclick="quizApp.init('past_p4_all')"
+                                class="bg-purple-600 text-white py-2 rounded-xl text-[10px] font-bold hover:bg-purple-700">全題</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 模擬試験 -->
+            <section
+                class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl shadow-md p-6 border border-slate-200">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">模擬試験</h3>
+                        <p class="text-xs text-slate-500">オリジナル予想問題で実力チェック</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div
+                        class="bg-white p-5 rounded-2xl border border-slate-200 text-center hover:shadow-md transition-all">
+                        <div class="text-emerald-600 text-2xl mb-3"><i class="fa-solid fa-list-check"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">大問1形式</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">空所補充（100問収録）</p>
+                        <div class="grid grid-cols-2 gap-2 w-full">
+                            <button onclick="quizApp.init('mock_p1_random')"
+                                class="bg-emerald-100 text-emerald-700 py-2 rounded-xl text-xs font-bold hover:bg-emerald-200 border border-emerald-200">10問</button>
+                            <button onclick="quizApp.init('mock_p1_all')"
+                                class="bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-emerald-700">全100問</button>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-5 rounded-2xl border border-slate-200 text-center hover:shadow-md transition-all">
+                        <div class="text-emerald-600 text-2xl mb-3"><i class="fa-solid fa-sort"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">大問2形式</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">整序英作文（50問収録）</p>
+                        <div class="grid grid-cols-2 gap-2 w-full">
+                            <button onclick="quizApp.init('mock_p2_random')"
+                                class="bg-emerald-100 text-emerald-700 py-2 rounded-xl text-xs font-bold hover:bg-emerald-200 border border-emerald-200">10問</button>
+                            <button onclick="quizApp.init('mock_p2_all')"
+                                class="bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-emerald-700">全50問</button>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-5 rounded-2xl border border-slate-200 text-center hover:shadow-md transition-all">
+                        <div class="text-emerald-600 text-2xl mb-3"><i class="fa-solid fa-comments"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">大問3形式</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">会話文（50問収録）</p>
+                        <div class="grid grid-cols-2 gap-2 w-full">
+                            <button onclick="quizApp.init('mock_p3_random')"
+                                class="bg-emerald-100 text-emerald-700 py-2 rounded-xl text-xs font-bold hover:bg-emerald-200 border border-emerald-200">10問</button>
+                            <button onclick="quizApp.init('mock_p3_all')"
+                                class="bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-emerald-700">全50問</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="mb-6">
+                <div class="flex justify-between items-end mb-3">
+                    <span id="question-number" class="text-sm font-bold text-[#8d6e63]">Question</span>
+                    <span id="mode-badge"
+                        class="text-xs font-bold bg-[#8d6e63] text-white px-3 py-1 rounded-full">カテゴリー</span>
+                </div>
+                <div class="w-full bg-[#d7ccc8] h-2.5 rounded-full overflow-hidden shadow-inner">
+                    <div id="progress-fill" class="h-full bg-[#a5d6a7] transition-all duration-300" style="width: 0%">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 長文エリア（大問4用） -->
+            <div id="reading-passage" class="reading-text-area hidden shadow-sm border border-slate-200"></div>
+
+            <div id="question-card" class="bg-white rounded-3xl shadow-lg p-6 md:p-10 mb-6 border border-slate-200">
+                <div id="jp-text" class="text-sm font-bold text-blue-600 mb-6 hidden border-l-4 border-blue-500 pl-3">
+                </div>
+                <div id="question-text"
+                    class="text-lg md:text-xl font-medium text-slate-800 mb-10 leading-relaxed dialogue-text"></div>
+
+                <div id="answer-area">
+                    <div id="options-container" class="grid grid-cols-1 gap-3"></div>
+                    <div id="scramble-container" class="hidden">
+                        <div id="built-sentence"
+                            class="min-h-[70px] p-5 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl mb-6 flex flex-wrap gap-2 items-center">
+                            <span class="text-slate-400 text-sm italic">単語をタップしてください...</span>
+                        </div>
+                        <div id="word-pool" class="flex flex-wrap gap-2 justify-center"></div>
+                        <div class="mt-8 flex justify-between">
+                            <button onclick="quizApp.resetScramble()"
+                                class="text-slate-500 font-bold px-4 py-2 hover:bg-slate-100 rounded-xl transition-all"><i
+                                    class="fa-solid fa-undo mr-1"></i> リセット</button>
+                            <button onclick="quizApp.checkScramble()"
+                                class="bg-[#8d6e63] text-white px-10 py-3 rounded-2xl font-bold shadow-md hover:bg-[#5d4037] transition-all">☕
+                                回答する</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="explanation-area"
+                class="explanation-card bg-amber-50 border-l-8 border-amber-400 rounded-r-3xl p-6 mb-8 shadow-sm">
+                <h4 class="font-bold text-amber-900 text-lg mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb"></i> 解説
+                </h4>
+                <p id="explanation-text" class="text-amber-800 leading-relaxed"></p>
+            </div>
+
+            <div class="flex justify-center">
+                <button id="next-btn" onclick="quizApp.nextQuestion()"
+                    class="hidden bg-blue-600 text-white font-bold py-4 px-16 rounded-2xl shadow-xl transition-all hover:bg-blue-700">次の問題へ
+                    <i class="fa-solid fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen"
+            class="hidden bg-white rounded-3xl shadow-xl p-10 md:p-16 text-center border border-slate-200">
+            <div class="text-6xl mb-4">🎓</div>
+            <h2 class="text-3xl font-bold mb-6 text-slate-800">演習完了!</h2>
+            <div id="result-score-box" class="text-7xl font-black text-blue-600 mb-10">0 / 0</div>
+            <p id="result-message" class="text-slate-600 mb-12 font-bold text-lg"></p>
+            <button onclick="quizApp.goHome()"
+                class="bg-blue-600 text-white px-16 py-5 rounded-3xl font-bold shadow-lg transition-transform hover:scale-105 hover:bg-blue-700">
+                <i class="fa-solid fa-home mr-2"></i>ホームに戻る</button>
+        </div>
+    </main>
+
+    <script src="exam_data.js"></script>
+    <script>
+
+        const quizApp = {
+            allQuestions: [],
+            currentIdx: 0,
+            score: 0,
+            isAnswered: false,
+            userOrder: [],
+            mode: '',
+            passageList: [],
+            currentPassageIdx: 0,
+
+            init: function (mode) {
+                this.mode = mode;
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                document.getElementById('score-area').classList.remove('hidden');
+                document.getElementById('reading-passage').classList.add('hidden');
+
+                if (mode === 'past_p1') this.allQuestions = [...pastDataP1];
+                else if (mode === 'past_p2') this.allQuestions = [...pastDataP2];
+                else if (mode === 'past_p3') this.allQuestions = [...pastDataP3];
+                else if (mode === 'past_p4_random') {
+                    const pass = pastDataP4[Math.floor(Math.random() * pastDataP4.length)];
+                    this.passageList = [pass];
+                    this.setupReadingMode();
+                }
+                else if (mode === 'past_p4_all') {
+                    this.passageList = [...pastDataP4];
+                    this.setupReadingMode();
+                }
+                else if (mode === 'mock_p1_random') this.allQuestions = [...mockP1Data].sort(() => 0.5 - Math.random()).slice(0, 10);
+                else if (mode === 'mock_p1_all') this.allQuestions = [...mockP1Data];
+                else if (mode === 'mock_p2_random') this.allQuestions = [...mockP2Data].sort(() => 0.5 - Math.random()).slice(0, 10);
+                else if (mode === 'mock_p2_all') this.allQuestions = [...mockP2Data];
+                else if (mode === 'mock_p3_random') this.allQuestions = [...mockP3Data].sort(() => 0.5 - Math.random()).slice(0, 10);
+                else if (mode === 'mock_p3_all') this.allQuestions = [...mockP3Data];
+                else if (mode === 'weak_review') {
+                    this.allQuestions = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                }
+
+                if (!mode.includes('p4')) {
+                    if (this.allQuestions.length === 0) { this.goHome(); return; }
+                    this.currentIdx = 0;
+                    this.score = 0;
+                    this.updateScore();
+                    this.loadQuestion();
+                }
+            },
+
+            setupReadingMode: function () {
+                this.currentPassageIdx = 0;
+                this.allQuestions = this.passageList[0].questions;
+                this.currentIdx = 0;
+                this.score = 0;
+                document.getElementById('reading-passage').innerHTML = this.passageList[0].passage;
+                document.getElementById('reading-passage').classList.remove('hidden');
+                this.updateScore();
+                this.loadQuestion();
+            },
+
+            loadQuestion: function () {
+                this.isAnswered = false;
+                this.userOrder = [];
+                const q = this.allQuestions[this.currentIdx];
+
+                document.getElementById('question-number').innerText = `Q${this.currentIdx + 1} / ${this.allQuestions.length}`;
+                document.getElementById('mode-badge').innerText = q.cat;
+                document.getElementById('progress-fill').style.width = `${(this.currentIdx / this.allQuestions.length) * 100}%`;
+                document.getElementById('explanation-area').style.display = 'none';
+                document.getElementById('next-btn').classList.add('hidden');
+
+                if (q.type === 'choice') {
+                    this.renderChoice(q);
+                } else {
+                    this.renderScramble(q);
+                }
+            },
+
+            renderChoice: function (q) {
+                document.getElementById('jp-text').classList.add('hidden');
+                document.getElementById('question-text').innerHTML = q.q;
+                document.getElementById('options-container').classList.remove('hidden');
+                document.getElementById('scramble-container').classList.add('hidden');
+
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+                q.a.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "option-btn text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-[#005088] font-medium transition-all flex items-center gap-3 bg-slate-50";
+                    btn.innerHTML = `<span class="flex-shrink-0 w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold">${idx + 1}</span> <span>${opt}</span>`;
+                    btn.onclick = () => this.checkChoice(idx, btn);
+                    container.appendChild(btn);
+                });
+            },
+
+            renderScramble: function (q) {
+                document.getElementById('jp-text').classList.remove('hidden');
+                document.getElementById('jp-text').innerText = `和訳: ${q.jp}`;
+                document.getElementById('question-text').innerText = (q.fixed[0] || "") + " (               ) " + (q.fixed[1] || "");
+                document.getElementById('options-container').classList.add('hidden');
+                document.getElementById('scramble-container').classList.remove('hidden');
+                this.resetScramble();
+            },
+
+            resetScramble: function () {
+                if (this.isAnswered) return;
+                this.userOrder = [];
+                const q = this.allQuestions[this.currentIdx];
+                const pool = document.getElementById('word-pool');
+                const built = document.getElementById('built-sentence');
+                built.innerHTML = '<span class="text-slate-400 text-sm italic text-xs">単語をタップしてください...</span>';
+                pool.innerHTML = '';
+                [...q.words].sort(() => 0.5 - Math.random()).forEach(word => {
+                    const chip = document.createElement('span');
+                    chip.className = "word-chip bg-white px-4 py-2 rounded-xl border-2 border-slate-200 shadow-sm font-bold text-slate-700 text-sm";
+                    chip.innerText = word;
+                    chip.onclick = () => this.addWord(word, chip);
+                    pool.appendChild(chip);
+                });
+            },
+
+            addWord: function (word, chip) {
+                if (this.isAnswered) return;
+                const built = document.getElementById('built-sentence');
+                if (this.userOrder.length === 0) built.innerHTML = '';
+                this.userOrder.push(word);
+                chip.classList.add('selected');
+                const newChip = document.createElement('span');
+                newChip.className = "bg-[#11caa0] text-white px-3 py-1 rounded-lg font-bold text-sm transition-all";
+                newChip.innerText = word;
+                built.appendChild(newChip);
+            },
+
+            checkChoice: function (idx, btn) {
+                if (this.isAnswered) return;
+                this.isAnswered = true;
+                const q = this.allQuestions[this.currentIdx];
+                const btns = document.querySelectorAll('.option-btn');
+                const isCorrect = (idx === q.correct);
+                if (isCorrect) {
+                    btn.classList.add('correct');
+                    this.score++;
+                    if (this.mode === 'weak_review') this.removeFromWeak(q.id);
+                } else {
+                    btn.classList.add('wrong');
+                    btns[q.correct].classList.add('correct');
+                    this.addToWeak(q);
+                }
+                this.updateScore();
+                this.showExplanation(q.exp);
+            },
+
+            checkScramble: function () {
+                if (this.isAnswered || this.userOrder.length === 0) return;
+                this.isAnswered = true;
+                const q = this.allQuestions[this.currentIdx];
+                const built = document.getElementById('built-sentence');
+                const userSent = this.userOrder.join(' ').toLowerCase();
+                const correctSent = q.correct.toLowerCase();
+                if (userSent === correctSent) {
+                    built.classList.add('bg-green-50', 'border-green-500');
+                    this.score++;
+                    if (this.mode === 'weak_review') this.removeFromWeak(q.id);
+                } else {
+                    built.classList.add('bg-red-50', 'border-red-500');
+                    const msg = document.createElement('div');
+                    msg.className = "w-full mt-2 text-[10px] text-red-600 font-bold";
+                    msg.innerText = `[正解]: ${q.correct}`;
+                    built.appendChild(msg);
+                    this.addToWeak(q);
+                }
+                this.updateScore();
+                this.showExplanation(q.exp);
+            },
+
+            addToWeak: function (question) {
+                let weakOnes = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                if (!weakOnes.some(item => item.id === question.id)) {
+                    weakOnes.push(question);
+                    localStorage.setItem('weak_questions', JSON.stringify(weakOnes));
+                }
+            },
+
+            removeFromWeak: function (id) {
+                let weakOnes = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                weakOnes = weakOnes.filter(item => item.id !== id);
+                localStorage.setItem('weak_questions', JSON.stringify(weakOnes));
+            },
+
+            updateScore: function () {
+                document.getElementById('score-display').innerText = `Score: ${this.score}`;
+            },
+
+            showExplanation: function (text) {
+                document.getElementById('explanation-text').innerText = text;
+                document.getElementById('explanation-area').style.display = 'block';
+                document.getElementById('next-btn').classList.remove('hidden');
+                setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+            },
+
+            nextQuestion: function () {
+                this.currentIdx++;
+                if (this.currentIdx < this.allQuestions.length) {
+                    this.loadQuestion();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    if ((this.mode === 'past_p4_all') && this.currentPassageIdx < this.passageList.length - 1) {
+                        this.currentPassageIdx++;
+                        this.allQuestions = this.passageList[this.currentPassageIdx].questions;
+                        this.currentIdx = 0;
+                        document.getElementById('reading-passage').innerHTML = this.passageList[this.currentPassageIdx].passage;
+                        this.loadQuestion();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        this.showResults();
+                    }
+                }
+            },
+
+            showResults: function () {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                const total = (this.mode === 'past_p4_all') ? this.passageList.reduce((acc, p) => acc + p.questions.length, 0) : this.allQuestions.length;
+                document.getElementById('result-score-box').innerText = `${this.score} / ${total}`;
+                const percent = (this.score / total) * 100;
+                const msg = document.getElementById('result-message');
+                if (percent >= 80) msg.innerText = "素晴らしい成績です！この調子で合格をつかみ取りましょう！";
+                else if (percent >= 60) msg.innerText = "まずまずの出来です。間違えた問題を復習して、完璧を目指しましょう。";
+                else msg.innerText = "基礎をしっかり固めるチャンスです。ホームに戻って苦手克服を進めましょう。";
+            },
+
+            goHome: function () {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('score-area').classList.add('hidden');
+                document.getElementById('start-screen').classList.remove('hidden');
+                document.getElementById('reading-passage').classList.add('hidden');
+                this.updateWeakUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            updateWeakUI: function () {
+                const weakOnes = JSON.parse(localStorage.getItem('weak_questions') || '[]');
+                const section = document.getElementById('weak-section');
+                const countElem = document.getElementById('weak-count');
+                if (weakOnes.length > 0) {
+                    section.classList.remove('hidden');
+                    countElem.innerText = weakOnes.length;
+                } else {
+                    section.classList.add('hidden');
+                }
+            }
+        };
+
+        window.onload = () => quizApp.updateWeakUI();
+    </script>
+</body>
+
+</html>

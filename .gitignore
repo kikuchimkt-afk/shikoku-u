@@ -1,0 +1,19 @@
+# ビルド出力
+node_modules/
+.vercel/
+
+# 大きなファイル（デプロイ不要）
+*.docx
+*.pdf
+
+# 使用不可フォルダ
+使用不可/
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# エディタ
+.vscode/
+*.swp
+*.swo
